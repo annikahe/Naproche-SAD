@@ -55,7 +55,7 @@ term_match env ((a,b):oth) =
       -> if f == g && length fargs == length gargs 
            then term_match env $ zip fargs gargs ++ oth
            else Nothing
-    (Var varName _ ,t) | (head varName == '?' || head varName == 'u')
+    (Var {trName = varName} ,t) | (head varName == '?' || head varName == 'u')
       -> case env of 
            Just env'
              -> case env' a of 
@@ -73,7 +73,7 @@ tsubst :: (Formula -> Maybe Formula)
        -> Formula
 tsubst sfn tm =
   case tm of 
-    Var varName _ | head varName == '?' || head varName == 'u'
+    Var {trName = varName} | head varName == '?' || head varName == 'u'
       -> case sfn tm of
            Just sub -> sub
            _-> tm
@@ -105,7 +105,7 @@ rewriter eqs tm =
   in if isJust r 
        then rewriter eqs (fromJust r)
        else case tm of 
-              Var _ _ -> tm
+              Var {} -> tm
               Trm {trName = f, trArgs = args, trId = n} 
                 -> let newArgs = map (rewriter eqs) args
                        tm' = zTrm n f newArgs

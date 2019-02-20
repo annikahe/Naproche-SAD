@@ -10,6 +10,7 @@ import qualified SAD.Data.Rules as Rule
 import SAD.Data.Text.Context (Context)
 import qualified SAD.Data.Text.Context as Context
 import qualified SAD.Data.Text.Block as Block (body, link, position)
+import qualified SAD.Data.Text.Decl as Decl
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
 -- import SAD.Data.Instr
@@ -44,9 +45,9 @@ vars fm =
     Or p q -> union (vars p) (vars q)
     Imp p q -> union (vars p) (vars q)
     Iff p q -> union (vars p) (vars q)
-    All x p -> nub ((zVar x):(vars p))
-    Exi x p -> nub ((zVar x):(vars p))
-    Var a b -> [Var a b] 
+    All x p -> nub (zVar (Decl.name x):(vars p))
+    Exi x p -> nub (zVar (Decl.name x):(vars p))
+    v@Var{} -> [v] 
 
 --finds all free variables in a formula
 fv :: Formula -> [Formula]
@@ -60,9 +61,9 @@ fv fm =
     Or p q -> union (fv p) (fv q)
     Imp p q -> union (fv p) (fv q)
     Iff p q -> union (fv p) (fv q)
-    All x p -> filter (\ l -> not $ twins l $ zVar x) (fv p) 
-    Exi x p -> filter (\ l -> not $ twins l $ zVar x) (fv p)
-    Var a b -> [Var a b] 
+    All x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p) 
+    Exi x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p)
+    v@Var{} -> [v] 
 
 
 ----critical pairs                   
@@ -106,7 +107,7 @@ overlaps (l,r) tm rfn =
       Trm name args _ n 
         -> listcases (overlaps (l,r)) (\i a -> rfn i $ zTrm n name a) 
               args (maybeToList $ rfn (unif [(l,tm)]) r) 
-      Var _ _ -> []
+      Var {} -> []
 
 
 crit1 :: Formula 

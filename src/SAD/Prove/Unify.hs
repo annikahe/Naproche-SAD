@@ -6,7 +6,7 @@ Unification of literals.
 
 
 
-module SAD.Prove.Unify (unify) where
+module SAD.Prove.Unify (unify, unif) where
 
 import Control.Monad
 import Control.Monad.Trans.Writer

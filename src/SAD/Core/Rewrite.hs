@@ -6,7 +6,7 @@ Term rewriting: extraction of rules and proof of equlities.
 {-# LANGUAGE FlexibleContexts #-}
 
 
-module SAD.Core.Rewrite (equalityReasoning) where
+module SAD.Core.Rewrite (equalityReasoning, lpoGe) where
 
 import SAD.Core.SourcePos
 import SAD.Data.Formula
