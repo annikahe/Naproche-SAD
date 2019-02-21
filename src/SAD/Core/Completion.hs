@@ -76,7 +76,8 @@ complete ord (eqs,def,_)
   | def == [] = eqs 
   | otherwise =
       let e = maybeToList (find (can (normalize_and_orient ord eqs)) def)
-      in complete ord (eqs, (nub def) \\ e,e)    
+      in if e == [] then error "complete: non-orientable equation" --prevent infinite loop
+                    else complete ord (eqs, (nub def) \\ e,e)    
 
 
 --tests whether x occurs before y in list      

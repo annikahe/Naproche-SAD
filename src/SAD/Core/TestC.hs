@@ -90,7 +90,7 @@ testWP =
       mulab = makeMul [a,b] -- a*b
       mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
       trs = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
-      wts = ["e","inv","e"] 
+      wts = ["e","*","inv"] 
       tm1 = makeMul [makeInv a,makeMul [makeInv (makeInv a),b]]
       tm2 = makeMul [a,makeMul [makeInv a,b]]
   in wordProb wts trs tm1 tm2
