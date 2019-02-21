@@ -21,6 +21,7 @@ import SAD.Core.Rewrite2
 import SAD.Core.Confluence
 import SAD.Core.CriticalPairs
 import SAD.Core.Completion
+import SAD.Core.WordProblem
 
 import Data.List
 import Data.Maybe
@@ -62,22 +63,34 @@ makeNeutr = zTrm (-21) "e" []
 ---Testing
 
 testComplete =
-    let a = zVar "?a"
-        b = zVar "?b"
-        inva = makeInv a --Inv(a)
-        mulab = makeMul [a,b] -- a*b
-        mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
-        eq = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
-        wts = ["1","mul","inv"]
-    in complete_and_simplify wts eq -- => Confluent
+  let a = zVar "?a"
+      b = zVar "?b"
+      inva = makeInv a --Inv(a)
+      mulab = makeMul [a,b] -- a*b
+      mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
+      eq = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
+      wts = ["e","*","inv"]
+  in complete_and_simplify wts eq -- => Confluent
 
 
 testConfluence =
-    let a = zVar "?a"
-        b = zVar "?b"
-        inva = makeInv a -- Inv(a)
-        mulab = makeMul [a,b] -- a*b
-        mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
-        eq = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
-        wts = ["1","mul","inv"]
-    in confluence eq -- => not confluent
+  let a = zVar "?a"
+      b = zVar "?b"
+      inva = makeInv a -- Inv(a)
+      mulab = makeMul [a,b] -- a*b
+      mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
+      eq = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
+      wts = ["e","*","inv"]
+  in confluence eq -- => not confluent
+
+testWP = 
+  let a = zVar "?a"
+      b = zVar "?b"
+      inva = makeInv a -- Inv(a)
+      mulab = makeMul [a,b] -- a*b
+      mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
+      trs = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
+      wts = ["e","inv","e"] 
+      tm1 = makeMul [makeInv a,makeMul [makeInv (makeInv a),b]]
+      tm2 = makeMul [a,makeMul [makeInv a,b]]
+  in wordProb wts trs tm1 tm2
