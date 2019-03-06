@@ -59,6 +59,12 @@ makeInv arg = zTrm (-20) "inv" [arg]
 makeNeutr :: Formula
 makeNeutr = zTrm (-21) "e" []
 
+makeConsta :: Formula
+makeConsta = zTrm (-22) "a" []
+
+makeConstb :: Formula
+makeConstb = zTrm (-23) "b" []
+
 
 ---Testing
 
@@ -94,3 +100,21 @@ testWP =
       tm1 = makeMul [makeInv a,makeMul [makeInv (makeInv a),b]]
       tm2 = makeMul [a,makeMul [makeInv a,b]]
   in wordProb wts trs tm1 tm2
+
+
+testA4 =
+  let x = zVar "?x"
+      y = zVar "?y"
+      z = zVar "?z"
+      e = makeNeutr
+      a = makeConsta
+      b = makeConstb
+      ass = zEqu (makeMul [makeMul [x,y],z]) (makeMul [x,makeMul [y,z]]) --(x*y)*z = x*(y*z)
+      neutr = zEqu (makeMul [x,e]) x --x*1=x
+      inv = zEqu (makeMul [x,makeInv x]) e --x*i(x)=1
+      aa = zEqu (makeMul [a,a]) e
+      bbb = zEqu (makeMul [b,makeMul [b,b]]) e
+      ababab = zEqu (makeMul [makeMul [a,b], makeMul [makeMul[a,b],makeMul[a,b]]]) e
+      wts = ["e","*","inv"]
+      eqs = [neutr,inv,ass]
+  in complete_and_simplify wts eqs

@@ -44,10 +44,10 @@ lpoGe w t s = twins t s || lpoGt w t s
 
 lpoGt :: Weighting -> Formula -> Formula -> Bool
 lpoGt w tr@Trm {trName = t, trArgs = ts} sr@Trm {trName = s, trArgs = ss} =
-   any (\ti -> lpoGe w ti sr) ts
-    || (all (lpoGt w tr) ss
-    && ((t == s && lexord (lpoGt w) ts ss)
-    || w t s))
+    any (\ti -> lpoGe w ti sr) ts
+      || (all (lpoGt w tr) ss
+      && ((t == s && lexord (lpoGt w) ts ss)
+      || w t s))
 lpoGt w Trm { trName = t, trArgs = ts} v@Var {trName = x} =
   w t x || any (\ti -> lpoGe w ti v) ts
 lpoGt w v@Var {trName = x} Trm {trName = t, trArgs = ts} =

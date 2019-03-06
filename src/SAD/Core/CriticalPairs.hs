@@ -32,40 +32,6 @@ import Control.Monad
 import Debug.Trace
 import Data.Typeable
 
-
---finds all variables in a formula
-vars :: Formula -> [Formula] 
-vars fm = 
-  case fm of
-    Bot -> []
-    Top -> []
-    Trm {trName = p, trArgs = args} -> nub (concatMap vars args) --concatMap wendet vars auf jedes argument an, die resultierende Liste von Listen wird konkateniert
-    Not p -> vars p
-    And p q -> union (vars p) (vars q) 
-    Or p q -> union (vars p) (vars q)
-    Imp p q -> union (vars p) (vars q)
-    Iff p q -> union (vars p) (vars q)
-    All x p -> nub (zVar (Decl.name x):(vars p))
-    Exi x p -> nub (zVar (Decl.name x):(vars p))
-    v@Var{} -> [v] 
-
---finds all free variables in a formula
-fv :: Formula -> [Formula]
-fv fm =
-  case fm of
-    Bot -> []
-    Top -> []
-    Trm {trName = p, trArgs = args} -> nub (concatMap fv args)
-    Not p -> fv p
-    And p q -> union (fv p) (fv q) 
-    Or p q -> union (fv p) (fv q)
-    Imp p q -> union (fv p) (fv q)
-    Iff p q -> union (fv p) (fv q)
-    All x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p) 
-    Exi x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p)
-    v@Var{} -> [v] 
-
-
 ----critical pairs                   
 
 --rename variables occurring in two terms to impede overlapping
@@ -113,8 +79,8 @@ overlaps (l,r) tm rfn =
 crit1 :: Formula 
       -> Formula 
       -> [Formula]
-crit1 (Trm {trName = "=",trArgs = [l1,r1]}) (Trm {trName = "=",trArgs = [l2,r2]}) = 
-  overlaps (l1,r1) l2 (\ unifct t ->  unifct <*> pure (zEqu t r2)  )
+crit1 Trm{trName ="=",trArgs = [l1,r1]} Trm{trName ="=",trArgs = [l2,r2]} = 
+  overlaps (l1,r1) l2 (\ unifct t ->  unifct <*> pure (zEqu t r2))
 crit1 _ _ = error "crit1: non-equational argument"
 
 
@@ -131,7 +97,4 @@ critical_pairs fma fmb =
 --computes all critical pairs of a term rewriting system
 all_critical_pairs :: [Formula] -> [Formula]
 all_critical_pairs trs = 
-  case trs of
-    [] -> []
-    eq:rest 
-      -> union (concatMap (critical_pairs eq) trs) (all_critical_pairs rest) 
+  nub $ concat $ [critical_pairs a b | a <- trs, b <- trs]

@@ -40,7 +40,7 @@ normalize_and_orient :: (Formula -> Formula -> Bool)
                      -> [Formula]
                      -> Formula
                      -> Maybe (Formula, Formula)
-normalize_and_orient ord rules (Trm {trName = "=",trArgs = [s,t]}) = 
+normalize_and_orient ord rules Trm{trName = "=",trArgs = [s,t]} = 
   let nfs = rewriter rules s 
       nft = rewriter rules t
   in if (ord nfs nft) then return (nfs,nft) 
@@ -80,22 +80,6 @@ complete ord (eqs,def,_)
                     else complete ord (eqs, (nub def) \\ e,e)    
 
 
---tests whether x occurs before y in list      
-earlier :: (Eq a) 
-        => [a] 
-        -> a 
-        -> a 
-        -> Bool
-earlier list x y =
-  let n = elemIndex x list
-      m = elemIndex y list
-      in case n of 
-        Nothing -> False
-        _-> case m of 
-          Nothing -> True
-          _-> n < m  
-
-
 --removing redundant rules from a completed term rewriting system
 interreduce :: [Formula] 
             -> [Formula] 
@@ -116,9 +100,7 @@ help_normalize :: (Formula -> Formula -> Bool)
                -> Maybe Formula
 help_normalize ord fml = 
   let tuple = normalize_and_orient ord [] fml
-  in case tuple of 
-    Just (s,t) -> Just (zEqu s t)
-    _ -> Nothing
+  in tuple >>= (\ (s,t) -> Just (zEqu s t))
 
 
 --gets a list of strings as weights (descending weights) and completes and interreduces a term rewriting system
@@ -127,7 +109,17 @@ complete_and_simplify :: [String]
                       -> [Formula] 
                       -> [Formula]
 complete_and_simplify wts eqs =
-  let ord = lpoGe (earlier wts)
+  let ord = lpo_ge (weight wts)
       maybeList = map (help_normalize ord) eqs
       eqs' = catMaybes maybeList
   in ((interreduce []) . (complete ord)) (eqs',[], all_critical_pairs eqs')
+
+
+only_complete :: [String] 
+              -> [Formula] 
+              -> [Formula]
+only_complete wts eqs =
+  let ord = lpo_ge (weight wts)
+      maybeList = map (help_normalize ord) eqs
+      eqs' = catMaybes maybeList
+  in trace ("crits: "++show (all_critical_pairs eqs')) (complete ord) (eqs',[], all_critical_pairs eqs')

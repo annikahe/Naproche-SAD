@@ -10,6 +10,7 @@ import qualified SAD.Data.Rules as Rule
 import SAD.Data.Text.Context (Context)
 import qualified SAD.Data.Text.Context as Context
 import qualified SAD.Data.Text.Block as Block (body, link, position)
+import qualified SAD.Data.Text.Decl as Decl
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
 -- import SAD.Data.Instr
@@ -39,6 +40,76 @@ can :: (t -> Maybe a)
 can f = isJust . f
 
 
+--finds all variables in a formula
+vars :: Formula -> [Formula] 
+vars fm = 
+  case fm of
+    Bot -> []
+    Top -> []
+    Trm {trName = p, trArgs = args} -> nub (concatMap vars args) --concatMap wendet vars auf jedes argument an, die resultierende Liste von Listen wird konkateniert
+    Not p -> vars p
+    And p q -> union (vars p) (vars q) 
+    Or p q -> union (vars p) (vars q)
+    Imp p q -> union (vars p) (vars q)
+    Iff p q -> union (vars p) (vars q)
+    All x p -> nub (zVar (Decl.name x):(vars p))
+    Exi x p -> nub (zVar (Decl.name x):(vars p))
+    v@Var{} -> [v] 
+
+--finds all free variables in a formula
+fv :: Formula -> [Formula]
+fv fm =
+  case fm of
+    Bot -> []
+    Top -> []
+    Trm {trName = p, trArgs = args} -> nub (concatMap fv args)
+    Not p -> fv p
+    And p q -> union (fv p) (fv q) 
+    Or p q -> union (fv p) (fv q)
+    Imp p q -> union (fv p) (fv q)
+    Iff p q -> union (fv p) (fv q)
+    All x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p) 
+    Exi x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p)
+    v@Var{} -> [v]
+    
+
+--lpo
+
+--tests whether x occurs before y in list 
+earlier :: (Eq a) 
+        => [a] 
+        -> a 
+        -> a 
+        -> Bool
+earlier list x y =
+  let n = elemIndex x list
+      m = elemIndex y list
+      in case n of 
+        Nothing -> False
+        _-> case m of 
+          Nothing -> True
+          _-> n < m 
+
+lexordi ord l1 l2 =
+  case (l1,l2) of
+    (h1:t1,h2:t2) -> if ord h1 h2 then length t1 == length t2
+                                  else h1 == h2 && lexordi ord t1 t2
+    _ -> False
+
+lpo_gt w s t =
+  case (s,t) of
+    (_,v@Var{trName = x}) -> not (s == t) && (elem v (fv s))
+    (Trm{trName = f, trArgs = fargs},Trm{trName = g, trArgs = gargs}) -> any (\ si -> lpo_ge w si t) fargs ||
+                                  all (lpo_gt w s) gargs &&
+                                  (f == g && lexordi (lpo_gt w) fargs gargs ||
+                                  w (f,length fargs) (g,length gargs))
+    _ -> False
+
+lpo_ge w s t = (s == t) || lpo_gt w s t
+
+weight lis (f,n) (g,m) = if f == g then n > m else earlier lis g f
+
+
 ----Rewriting
 
 --modified unification algorithm
@@ -55,7 +126,7 @@ term_match env ((a,b):oth) =
       -> if f == g && length fargs == length gargs 
            then term_match env $ zip fargs gargs ++ oth
            else Nothing
-    (Var {trName = varName} ,t) | (head varName == '?' || head varName == 'u')
+    (Var {trName = varName} ,t) | head varName == '?' || head varName == 'u'
       -> case env of 
            Just env'
              -> case env' a of 
@@ -89,7 +160,7 @@ rewrite1 :: [Formula]
 rewrite1 eqs t =
   case eqs of
   (Trm "=" [l,r] _ equalityId):oeqs -> 
-    let trmM = term_match (Just (\a -> Nothing)) [(l,t)]
+    let trmM = term_match (Just (\ a -> Nothing)) [(l,t)]
     in case trmM of
          Just fn -> Just (tsubst fn r)
          _ -> rewrite1 oeqs t
@@ -110,4 +181,3 @@ rewriter eqs tm =
                 -> let newArgs = map (rewriter eqs) args
                        tm' = zTrm n f newArgs
                    in if tm' == tm then tm else rewriter eqs tm' 
-
