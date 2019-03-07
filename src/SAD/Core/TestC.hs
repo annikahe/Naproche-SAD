@@ -65,6 +65,15 @@ makeConsta = zTrm (-22) "a" []
 makeConstb :: Formula
 makeConstb = zTrm (-23) "b" []
 
+makeConstTrue :: Formula 
+makeConstTrue = zTrm (-24) "true" []
+
+makeFunOr :: [Formula] -> Formula
+makeFunOr args = zTrm (-25) "or" args
+
+makeNeg :: Formula -> Formula
+makeNeg arg = zTrm (-26) "-" [arg]
+
 
 ---Testing
 
@@ -115,6 +124,96 @@ testA4 =
       aa = zEqu (makeMul [a,a]) e
       bbb = zEqu (makeMul [b,makeMul [b,b]]) e
       ababab = zEqu (makeMul [makeMul [a,b], makeMul [makeMul[a,b],makeMul[a,b]]]) e
-      wts = ["e","*","inv"]
+      wts = ["e","*","inv","a","b"]
       eqs = [neutr,inv,ass]
   in complete_and_simplify wts eqs
+  --in confluence eqs
+
+test2 = --Ex. 6.4
+  let x = zVar "?x"
+      fgf = makeFunf [makeFung [makeFunf [x]]] --f(g(f(x)))
+      g = makeFung [x] --g(x)
+      eq = zEqu fgf g --f(g(f(x))) = g(x)
+  in confluence [eq] -- => not confluent 
+
+test2complete = 
+  let x = zVar "?x"
+      fgf = makeFunf [makeFung [makeFunf [x]]] --f(g(f(x)))
+      g = makeFung [x] --g(x)
+      eq = zEqu fgf g --f(g(f(x))) = g(x)
+      wts = ["f","g"]
+  in complete_and_simplify wts [eq] -- [g(g(f(?a0))) = f(g(g(?a0))),f(g(f(?x))) = g(?x)]
+
+test3 = --Ex. 6.6
+  let x = zVar "?x"
+      f = makeFunf [x]
+      ff = makeFunf [f]
+      g = makeFung [x]
+      gg = makeFung [g]
+      fg = makeFunf [g]
+      gf = makeFung [f]
+      eq1 = zEqu ff f --f(f(x)) = f(x)
+      eq2 = zEqu gg f --g(g(x)) = f(x)
+      eq3 = zEqu fg g --f(g(x)) = g(x)
+      eq4 = zEqu gf g --g(f(x)) = g(x)
+  in confluence [eq1,eq2,eq3,eq4] -- => confluent
+
+test3complete = 
+  let x = zVar "?x"
+      f = makeFunf [x]
+      ff = makeFunf [f]
+      g = makeFung [x]
+      gg = makeFung [g]
+      fg = makeFunf [g]
+      gf = makeFung [f]
+      eq1 = zEqu ff f --f(f(x)) = f(x)
+      eq2 = zEqu gg f --g(g(x)) = f(x)
+      eq3 = zEqu fg g --f(g(x)) = g(x)
+      eq4 = zEqu gf g --g(f(x)) = g(x)
+      wts = ["f","g"]
+  in complete_and_simplify wts [eq1,eq2,eq3,eq4] -- => [f(f(?x)) = f(?x),g(g(?x)) = f(?x),f(g(?x)) = g(?x),g(f(?x)) = g(?x)]
+
+test4 = --Ex. 6.5 (c)
+  let x = zVar "?x"
+      a = makeConsta 
+      b = makeConstb
+      eq1 = zEqu (makeFunf [x,x]) a
+      eq2 = zEqu (makeFunf [x,makeFung [x]]) b
+  in confluence [eq1,eq2] -- => confluent
+
+test5 = --Ex.6.10
+  let x = zVar "?x"
+      y = zVar "?y"
+      eq = zEqu (makeFunf [x]) (makeFung [x,y])
+  in putStr ("Critical Pairs: "++ show (all_critical_pairs [eq])++"\n"++"Confluent? "++show (confluence [eq])++"\n")
+  -- => not confluent (more variables in the right-hand side than in the left-hand side)
+
+test6 = --Ex. 7.2
+  let x = zVar "?x"
+      y = zVar "?y"
+      z = zVar "?z"
+      eq1 = zEqu (makeMul [makeMul [x,y],makeMul [y,z]]) y --(x*y)*(y*z) = y
+      eq2 = zEqu (makeMul [x,makeMul[makeMul [x,y],z]]) (makeMul [x,y]) -- x*((x*y)*z) = x*y
+      eq3 = zEqu (makeMul [makeMul [x,makeMul [y,z]],z]) (makeMul [y,z]) -- (x*(y*z))*z = y*z
+  in confluence [eq1,eq2,eq3] -- => confluent
+
+
+testReals = -- Sequences 
+  let x = zVar "?x" --x,y,z real numbers
+      y = zVar "?y"
+      z = zVar "?z"
+      a = zVar "?a"
+      b = zVar "?b"
+      c = zVar "?c"
+      d = zVar "?d"
+      e = makeNeutr
+      assAdd = zEqu (makeAdd [makeAdd [x,y],z]) (makeAdd [x,makeAdd [y,z]])
+      zero = zEqu (makeAdd [x,e]) x
+      neg = zEqu (makeAdd [x,makeNeg x]) e
+      distrib = zEqu (makeAdd [makeMul [x,y], makeMul [x,z]]) (makeMul [x,makeAdd [y,z]])
+      distribDummy = zEqu (makeAdd [makeMul [y,x],makeMul [z,x]]) (makeMul [makeAdd [y,z],x])
+      wts = ["*","-","+","e"]
+      trs = [assAdd,zero,neg,distrib,distribDummy]
+      binomil = makeMul [makeAdd [a,b],makeAdd [c,d]]
+      binomir = makeAdd [makeAdd [makeMul [a,c],makeMul [b,c]],makeAdd [makeMul [a,d],makeMul [b,d]]]
+  in wordProb wts trs binomil binomir
