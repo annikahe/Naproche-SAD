@@ -37,10 +37,15 @@ import Data.Typeable
 
 --solving the word problem
 --input: weighting and the corresponding term rewriting system and two terms that are tested on equality
-wordProb :: [String] -> [Formula] -> Formula -> Formula -> Bool
+wordProb :: [String] 
+         -> [Formula] 
+         -> Formula 
+         -> Formula 
+         -> Bool
 wordProb wts trs tm1 tm2 =
-    if confluence trs == False then wordProb wts (complete_and_simplify wts trs) tm1 tm2
-                               else let tm1' = rewriter trs tm1
-                                        tm2' = rewriter trs tm2
-                                    in tm1' == tm2'
+  if confluence trs == False 
+    then wordProb wts (complete_and_simplify wts trs) tm1 tm2
+    else let tm1' = rewriter trs tm1
+             tm2' = rewriter trs tm2
+         in tm1' == tm2'
 

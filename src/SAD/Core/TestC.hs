@@ -111,7 +111,7 @@ testWP =
   in wordProb wts trs tm1 tm2
 
 
-testA4 =
+testGrp =
   let x = zVar "?x"
       y = zVar "?y"
       z = zVar "?z"
@@ -121,13 +121,10 @@ testA4 =
       ass = zEqu (makeMul [makeMul [x,y],z]) (makeMul [x,makeMul [y,z]]) --(x*y)*z = x*(y*z)
       neutr = zEqu (makeMul [x,e]) x --x*1=x
       inv = zEqu (makeMul [x,makeInv x]) e --x*i(x)=1
-      aa = zEqu (makeMul [a,a]) e
-      bbb = zEqu (makeMul [b,makeMul [b,b]]) e
-      ababab = zEqu (makeMul [makeMul [a,b], makeMul [makeMul[a,b],makeMul[a,b]]]) e
-      wts = ["e","*","inv","a","b"]
+      wts = ["e","*","inv"]
       eqs = [neutr,inv,ass]
   in complete_and_simplify wts eqs
-  --in confluence eqs
+
 
 test2 = --Ex. 6.4
   let x = zVar "?x"
@@ -197,23 +194,37 @@ test6 = --Ex. 7.2
       eq3 = zEqu (makeMul [makeMul [x,makeMul [y,z]],z]) (makeMul [y,z]) -- (x*(y*z))*z = y*z
   in confluence [eq1,eq2,eq3] -- => confluent
 
+test7 =
+  let x = zVar "?x"
+      trs = [zEqu (makeFunf [makeFunf [x]]) (makeFung [x])]
+      wts = ["g","f"]
+  in complete_and_simplify wts trs
 
-testReals = -- Sequences 
-  let x = zVar "?x" --x,y,z real numbers
-      y = zVar "?y"
-      z = zVar "?z"
-      a = zVar "?a"
+
+testCritPairs =
+  let a = zVar "?a"
       b = zVar "?b"
-      c = zVar "?c"
-      d = zVar "?d"
-      e = makeNeutr
-      assAdd = zEqu (makeAdd [makeAdd [x,y],z]) (makeAdd [x,makeAdd [y,z]])
-      zero = zEqu (makeAdd [x,e]) x
-      neg = zEqu (makeAdd [x,makeNeg x]) e
-      distrib = zEqu (makeAdd [makeMul [x,y], makeMul [x,z]]) (makeMul [x,makeAdd [y,z]])
-      distribDummy = zEqu (makeAdd [makeMul [y,x],makeMul [z,x]]) (makeMul [makeAdd [y,z],x])
-      wts = ["*","-","+","e"]
-      trs = [assAdd,zero,neg,distrib,distribDummy]
-      binomil = makeMul [makeAdd [a,b],makeAdd [c,d]]
-      binomir = makeAdd [makeAdd [makeMul [a,c],makeMul [b,c]],makeAdd [makeMul [a,d],makeMul [b,d]]]
-  in wordProb wts trs binomil binomir
+      inva = makeInv a --Inv(a)
+      mulab = makeMul [a,b] -- a*b
+      mulinvmul = makeMul [inva,mulab] --Inv(a)*(a*b)
+      eq = [zEqu mulinvmul b] -- Inv(a)*(a*b) = b
+      wts = ["e","*","inv"]
+      c1 = head (all_critical_pairs eq)
+      eq' = case c1 of
+             Trm{trId = equalityId,trArgs = [l,r]} 
+               -> [zEqu (rewriter eq r) (rewriter eq l)]
+  in all_critical_pairs (eq'++eq)
+
+  
+testCritPairs2 =
+  let x = zVar "?x"
+      fgf = makeFunf [makeFung [makeFunf [x]]] --f(g(f(x)))
+      g = makeFung [x] --g(x)
+      eq = zEqu fgf g --f(g(f(x))) = g(x)
+      trs = [eq] 
+      wts = ["f","g"]
+      c1 = head (all_critical_pairs trs)
+      trs' = case c1 of
+              Trm{trId = equalityId,trArgs = [l,r]} 
+                -> [zEqu (rewriter trs l) (rewriter trs r)]
+  in putStr (show (all_critical_pairs trs) ++ "\n" ++ show (all_critical_pairs (trs'++trs)) ++ "\n")
