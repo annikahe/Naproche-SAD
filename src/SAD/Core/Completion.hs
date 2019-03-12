@@ -109,7 +109,7 @@ complete_and_simplify :: [String]
                       -> [Formula] 
                       -> [Formula]
 complete_and_simplify wts eqs =
-  let ord = lpo_ge (weight wts)
+  let ord = lpoGe (weight wts)
       maybeList = map (help_normalize ord) eqs
       eqs' = catMaybes maybeList
   in ((interreduce []) . (complete ord)) (eqs',[], all_critical_pairs eqs')
@@ -119,7 +119,7 @@ only_complete :: [String]
               -> [Formula] 
               -> [Formula]
 only_complete wts eqs =
-  let ord = lpo_ge (weight wts)
+  let ord = lpoGe (weight wts)
       maybeList = map (help_normalize ord) eqs
       eqs' = catMaybes maybeList
   in trace ("crits: "++show (all_critical_pairs eqs')) (complete ord) (eqs',[], all_critical_pairs eqs')

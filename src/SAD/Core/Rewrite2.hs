@@ -90,25 +90,7 @@ earlier list x y =
           Nothing -> True
           _-> n < m 
 
-lexordi ord l1 l2 =
-  case (l1,l2) of
-    (h1:t1,h2:t2) -> if ord h1 h2 then length t1 == length t2
-                                  else h1 == h2 && lexordi ord t1 t2
-    _ -> False
-
-lpo_gt w s t =
-  case (s,t) of
-    (_,v@Var{trName = x}) -> not (s == t) && (elem v (fv s))
-    (Trm{trName = f, trArgs = fargs},Trm{trName = g, trArgs = gargs}) -> any (\ si -> lpo_ge w si t) fargs ||
-                                  all (lpo_gt w s) gargs &&
-                                  (f == g && lexordi (lpo_gt w) fargs gargs ||
-                                  w (f,length fargs) (g,length gargs))
-    _ -> False
-
-lpo_ge w s t = (s == t) || lpo_gt w s t
-
-weight lis (f,n) (g,m) = if f == g then n > m else earlier lis g f
-
+weight lis f g = earlier lis g f
 
 ----Rewriting
 
