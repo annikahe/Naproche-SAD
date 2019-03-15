@@ -71,10 +71,8 @@ fv fm =
     All x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p) 
     Exi x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p)
     v@Var{} -> [v]
+
     
-
---lpo
-
 --tests whether x occurs before y in list 
 earlier :: (Eq a) 
         => [a] 

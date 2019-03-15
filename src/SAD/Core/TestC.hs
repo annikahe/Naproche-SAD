@@ -111,7 +111,7 @@ testWP =
   in wordProb wts trs tm1 tm2
 
 
-testGrp =
+testGrp = -- on my computer, this takes a few minutes. Please be patient.
   let x = zVar "?x"
       y = zVar "?y"
       z = zVar "?z"
@@ -123,8 +123,7 @@ testGrp =
       inv = zEqu (makeMul [x,makeInv x]) e --x*i(x)=1
       wts = ["e","*","inv"]
       eqs = [neutr,inv,ass]
-  in complete_and_simplify wts eqs
-
+  in complete_and_simplify wts eqs 
 
 test2 = --Ex. 6.4
   let x = zVar "?x"
@@ -168,7 +167,7 @@ test3complete =
       eq3 = zEqu fg g --f(g(x)) = g(x)
       eq4 = zEqu gf g --g(f(x)) = g(x)
       wts = ["f","g"]
-  in complete_and_simplify wts [eq1,eq2,eq3,eq4] -- => [f(f(?x)) = f(?x),g(g(?x)) = f(?x),f(g(?x)) = g(?x),g(f(?x)) = g(?x)]
+  in complete_and_simplify wts [eq1,eq2,eq3,eq4] -- => [f(f(?x)) = f(?x),g(g(?x)) = f(?x),f(g(?x)) = g(?x),g(f(?x)) = g(?x)] = [eq1,eq2,eq3,eq4]
 
 test4 = --Ex. 6.5 (c)
   let x = zVar "?x"
@@ -198,8 +197,7 @@ test7 =
   let x = zVar "?x"
       trs = [zEqu (makeFunf [makeFunf [x]]) (makeFung [x])]
       wts = ["g","f"]
-  in complete_and_simplify wts trs
-
+  in complete_and_simplify wts trs -- => [f(g(?a0)) = g(f(?a0)),f(f(?x)) = g(?x)] 
 
 testCritPairs =
   let a = zVar "?a"

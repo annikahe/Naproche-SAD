@@ -97,4 +97,4 @@ critical_pairs fma fmb =
 --computes all critical pairs of a term rewriting system
 all_critical_pairs :: [Formula] -> [Formula]
 all_critical_pairs trs = 
-  nub $ concat $ [critical_pairs a b | a <- trs, b <- trs]
+  nub $ concat $ [critical_pairs a b | (a:rest) <- tails trs, b <- (a:rest)]
