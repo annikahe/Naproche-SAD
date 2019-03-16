@@ -46,7 +46,7 @@ wordProb wts trs tm1 tm2 =
   let trs' = if confluence trs == False 
                 then complete_and_simplify wts trs
                 else trs
-      tm1' = rewriter trs tm1
-      tm2' = rewriter trs tm2
+      tm1' = rewriter trs' tm1
+      tm2' = rewriter trs' tm2
   in tm1' == tm2'
 
