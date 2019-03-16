@@ -43,9 +43,10 @@ wordProb :: [String]
          -> Formula 
          -> Bool
 wordProb wts trs tm1 tm2 =
-  if confluence trs == False 
-    then wordProb wts (complete_and_simplify wts trs) tm1 tm2
-    else let tm1' = rewriter trs tm1
-             tm2' = rewriter trs tm2
-         in tm1' == tm2'
+  let trs' = if confluence trs == False 
+                then complete_and_simplify wts trs
+                else trs
+      tm1' = rewriter trs tm1
+      tm2' = rewriter trs tm2
+  in tm1' == tm2'
 
