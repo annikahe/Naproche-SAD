@@ -1,3 +1,8 @@
+{-
+Author: Annika Hennes (2019)
+
+solving the word problem for finite and terminating rewrite systems
+-}
 {-# LANGUAGE FlexibleContexts #-}
 
 
@@ -12,7 +17,6 @@ import qualified SAD.Data.Text.Context as Context
 import qualified SAD.Data.Text.Block as Block (body, link, position)
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
--- import SAD.Data.Instr
 import SAD.Core.Thesis
 import SAD.Core.Reason
 import SAD.Core.Rewrite
@@ -35,8 +39,8 @@ import Debug.Trace
 import Data.Typeable
 
 
---solving the word problem
---input: weighting and the corresponding term rewriting system and two terms that are tested on equality
+{-input: weighting, term rewriting system and two terms
+  output: boolean value that determines whether the two terms are equal-}
 wordProb :: [String] 
          -> [Formula] 
          -> Formula 

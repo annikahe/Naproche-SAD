@@ -1,3 +1,8 @@
+{-
+Author: Annika Hennes (2019)
+
+Executes Knuth-Bendix completion on a term rewriting system
+-}
 {-# LANGUAGE FlexibleContexts #-}
 
 
@@ -12,7 +17,6 @@ import qualified SAD.Data.Text.Context as Context
 import qualified SAD.Data.Text.Block as Block (body, link, position)
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
--- import SAD.Data.Instr
 import SAD.Core.Thesis
 import SAD.Core.Reason
 import SAD.Core.Rewrite
@@ -33,9 +37,7 @@ import Debug.Trace
 import Data.Typeable
 
 
-----completion
-
---adding rules respecting the ordering
+{-adding rules respecting a given ordering-}
 normalize_and_orient :: (Formula -> Formula -> Bool) 
                      -> [Formula]
                      -> Formula
@@ -50,7 +52,7 @@ normalize_and_orient ord rules _ =
   error "normalize_and_orient: non-equational input"                          
 
 
---help function for updating the three lists in complete
+{-help function for updating the three lists in complete-}
 updateTrip :: Maybe (Formula,Formula) 
            -> ([Formula],[Formula],[Formula]) 
            -> ([Formula],[Formula],[Formula])
@@ -64,7 +66,7 @@ updateTrip _ (eqs,def,eq:ocrits) = (eqs,eq:def,ocrits)
 updateTrip _ _ = error "updateTrip: no critical pairs"
 
 
---basic completion of a term rewriting system
+{-basic completion of a term rewriting system-}
 complete :: (Formula -> Formula -> Bool)
          -> ([Formula], [Formula], [Formula]) 
          -> [Formula]
@@ -80,7 +82,7 @@ complete ord (eqs,def,_)
                     else complete ord (eqs, (nub def) \\ e,e)    
 
 
---removing redundant rules from a completed term rewriting system
+{-removing redundant rules from a completed term rewriting system-}
 interreduce :: [Formula] 
             -> [Formula] 
             -> [Formula]
@@ -95,15 +97,16 @@ interreduce dun eqs =
     _ -> error "interreduce: non-equational argument"
 
 
+{-normalizes both sides of an equation-}
 help_normalize :: (Formula -> Formula -> Bool) 
                -> Formula 
                -> Maybe Formula
 help_normalize ord fml = 
-  let tuple = normalize_and_orient ord [] fml
-  in tuple >>= (\ (s,t) -> Just (zEqu s t))
+  let normEq = normalize_and_orient ord [] fml
+  in normEq >>= (\ (s,t) -> Just (zEqu s t))
 
 
---gets a list of strings as weights (descending weights) and completes and interreduces a term rewriting system
+{-gets a list of strings as weights (descending weights) and completes and interreduces a term rewriting system-}
 --this is the most important function
 complete_and_simplify :: [String] 
                       -> [Formula] 

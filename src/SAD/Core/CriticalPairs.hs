@@ -1,3 +1,8 @@
+{-
+Author: Annika Hennes (2019)
+
+Computing the critical pairs of a term rewriting system
+-}
 {-# LANGUAGE FlexibleContexts #-}
 
 
@@ -13,7 +18,6 @@ import qualified SAD.Data.Text.Block as Block (body, link, position)
 import qualified SAD.Data.Text.Decl as Decl
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
--- import SAD.Data.Instr
 import SAD.Core.Thesis
 import SAD.Core.Reason
 import SAD.Core.Rewrite
@@ -31,10 +35,9 @@ import Control.Monad
 
 import Debug.Trace
 import Data.Typeable
+                   
 
-----critical pairs                   
-
---rename variables occurring in two terms to impede overlapping
+{-rename variables occurring in two terms such that they have no variables in common-}
 renamepair :: Formula 
            -> Formula 
            -> (Formula, Formula)
@@ -47,9 +50,10 @@ renamepair tm1 tm2 =
   in (substs tm1 (map trName fvs1) nms1, 
       substs tm2 (map trName fvs2) nms2)
 
+
 --computing all critical pairs
 
---updating the substitution formula recursively
+{-updating the substitution formula recursively-}
 listcases :: (Formula -> (m (Formula -> Formula) -> Formula -> Maybe Formula) -> [Formula]) 
           -> (m (Formula -> Formula) -> [Formula] -> Maybe Formula) 
           -> [Formula] 
@@ -62,7 +66,7 @@ listcases fn rfn lis acc =
             listcases fn (\i t' -> rfn i $ h:t') t acc
 
 
---finds all critical overlaps between a left-hand side of a rule and another term
+{-finds all critical overlaps between a left-hand side of a rule and another term-}
 overlaps :: MonadPlus m 
          => (Formula, Formula) 
          -> Formula 
@@ -84,7 +88,7 @@ crit1 Trm{trName ="=",trArgs = [l1,r1]} Trm{trName ="=",trArgs = [l2,r2]} =
 crit1 _ _ = error "crit1: non-equational argument"
 
 
---computes all critical pairs between two formulas
+{-computes all critical pairs of two formulas-}
 critical_pairs :: Formula 
                -> Formula 
                -> [Formula]
@@ -94,7 +98,7 @@ critical_pairs fma fmb =
                    else union (crit1 fm1 fm2) (crit1 fm2 fm1)
 
 
---computes all critical pairs of a term rewriting system
+{-computes all critical pairs of a term rewriting system-}
 all_critical_pairs :: [Formula] -> [Formula]
 all_critical_pairs trs = 
   nub $ concat $ [critical_pairs a b | (a:rest) <- tails trs, b <- (a:rest)]

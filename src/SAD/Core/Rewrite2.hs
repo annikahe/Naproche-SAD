@@ -1,3 +1,8 @@
+{-
+Author: Annika Hennes (2019)
+
+Term rewriting that also works on non-ground terms
+-}
 {-# LANGUAGE FlexibleContexts #-}
 
 
@@ -13,7 +18,6 @@ import qualified SAD.Data.Text.Block as Block (body, link, position)
 import qualified SAD.Data.Text.Decl as Decl
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
--- import SAD.Data.Instr
 import SAD.Core.Thesis
 import SAD.Core.Reason
 import SAD.Core.Rewrite
@@ -31,6 +35,7 @@ import Control.Monad
 import Debug.Trace
 import Data.Typeable
 
+
 instance Eq Formula where  
   a == b = twins a b
 
@@ -39,14 +44,13 @@ can :: (t -> Maybe a)
     -> Bool
 can f = isJust . f
 
-
---finds all variables in a formula
+{-finds all variables in a formula-}
 vars :: Formula -> [Formula] 
 vars fm = 
   case fm of
     Bot -> []
     Top -> []
-    Trm {trName = p, trArgs = args} -> nub (concatMap vars args) --concatMap wendet vars auf jedes argument an, die resultierende Liste von Listen wird konkateniert
+    Trm {trName = p, trArgs = args} -> nub (concatMap vars args) 
     Not p -> vars p
     And p q -> union (vars p) (vars q) 
     Or p q -> union (vars p) (vars q)
@@ -56,7 +60,8 @@ vars fm =
     Exi x p -> nub (zVar (Decl.name x):(vars p))
     v@Var{} -> [v] 
 
---finds all free variables in a formula
+
+{-finds all free variables in a formula-}
 fv :: Formula -> [Formula]
 fv fm =
   case fm of
@@ -72,8 +77,8 @@ fv fm =
     Exi x p -> filter (\ l -> not $ twins l $ zVar (Decl.name x)) (fv p)
     v@Var{} -> [v]
 
-    
---tests whether x occurs before y in list 
+
+{-tests whether x occurs before y in list-}
 earlier :: (Eq a) 
         => [a] 
         -> a 
@@ -88,14 +93,17 @@ earlier list x y =
           Nothing -> True
           _-> n < m 
 
+
+{-order of precedence in a list-}
 weight lis f g = earlier lis g f
+
 
 ----Rewriting
 
 --modified unification algorithm
 --instantiating left-hand side of a formula to a term
 
---updating substitution function:
+{-updating substitution function-}
 term_match :: Maybe (Formula -> Maybe Formula)
            -> [(Formula, Formula)] 
            -> Maybe (Formula -> Maybe Formula)
@@ -118,7 +126,7 @@ term_match env ((a,b):oth) =
     _ -> Nothing 
 
 
---term substitution
+{-term substitution-}
 tsubst :: (Formula -> Maybe Formula) 
        -> Formula 
        -> Formula
@@ -133,7 +141,7 @@ tsubst sfn tm =
     _ -> error "tsubst: input is not a term"
 
 
---tries to find a rewrite rule in eqs that can be applied at the first position of some term t
+{-tries to find a rewrite rule in eqs that can be applied at the first position of some term t-}
 rewrite1 :: [Formula] 
          -> Formula 
          -> Maybe Formula
@@ -147,7 +155,7 @@ rewrite1 eqs t =
   _ -> Nothing 
 
 
---rewriting of arbitrary terms  
+{-rewriting of arbitrary terms-} 
 rewriter :: [Formula] 
          -> Formula 
          -> Formula

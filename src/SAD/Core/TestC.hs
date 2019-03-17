@@ -1,3 +1,8 @@
+{-
+Author: Annika Hennes (2019)
+
+Testing of the Knuth-Bendix Completion and related functions
+-}
 {-# LANGUAGE FlexibleContexts #-}
 
 
@@ -12,7 +17,6 @@ import qualified SAD.Data.Text.Context as Context
 import qualified SAD.Data.Text.Block as Block (body, link, position)
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
--- import SAD.Data.Instr
 import SAD.Core.Thesis
 import SAD.Core.Reason
 import SAD.Core.Rewrite
@@ -36,7 +40,7 @@ import Debug.Trace
 import Data.Typeable
 
 
--- create certain functions for testing     
+-- create functions for testing     
 
 makeFunf :: [Formula] -> Formula
 makeFunf args = zTrm (-15) "f" args
@@ -167,7 +171,7 @@ test3complete =
       eq3 = zEqu fg g --f(g(x)) = g(x)
       eq4 = zEqu gf g --g(f(x)) = g(x)
       wts = ["f","g"]
-  in complete_and_simplify wts [eq1,eq2,eq3,eq4] -- => [f(f(?x)) = f(?x),g(g(?x)) = f(?x),f(g(?x)) = g(?x),g(f(?x)) = g(?x)] = [eq1,eq2,eq3,eq4]
+  in complete_and_simplify wts [eq1,eq2,eq3,eq4] -- => outputs [f(f(?x)) = f(?x),g(g(?x)) = f(?x),f(g(?x)) = g(?x),g(f(?x)) = g(?x)] = [eq1,eq2,eq3,eq4]
 
 test4 = --Ex. 6.5 (c)
   let x = zVar "?x"
@@ -195,7 +199,7 @@ test6 = --Ex. 7.2
 
 test7 =
   let x = zVar "?x"
-      trs = [zEqu (makeFunf [makeFunf [x]]) (makeFung [x])]
+      trs = [zEqu (makeFunf [makeFunf [x]]) (makeFung [x])] -- f(f(x)) = g(x)
       wts = ["g","f"]
   in complete_and_simplify wts trs -- => [f(g(?a0)) = g(f(?a0)),f(f(?x)) = g(?x)] 
 

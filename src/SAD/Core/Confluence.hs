@@ -1,3 +1,8 @@
+{-
+Author: Annika Hennes (2019)
+
+Testing whether a term rewriting system is confluent
+-}
 {-# LANGUAGE FlexibleContexts #-}
 
 
@@ -12,7 +17,6 @@ import qualified SAD.Data.Text.Context as Context
 import qualified SAD.Data.Text.Block as Block (body, link, position)
 import SAD.Core.Base
 import qualified SAD.Core.Message as Message
--- import SAD.Data.Instr
 import SAD.Core.Thesis
 import SAD.Core.Reason
 import SAD.Core.Rewrite
@@ -32,8 +36,8 @@ import Control.Monad
 import Debug.Trace
 import Data.Typeable
 
---tests whether a terminating term rewriting system is confluent
 
+{-tests whether the critical pairs in a term rewriting system are joinable-}
 confluence_crit_pairs :: [Formula] 
                       -> [Formula]  
                       -> Bool
@@ -44,6 +48,8 @@ confluence_crit_pairs cp trs =
       -> rewriter trs l == rewriter trs r && confluence_crit_pairs rest trs 
     _ -> error "confluence_crit_pairs: non-equational argument in list"
 
+
+{-tests whether a terminating term rewriting system is confluent-}
 confluence :: [Formula] 
            -> Bool
 confluence trs =
